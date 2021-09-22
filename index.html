@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en">
+<head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, target-densitydpi=medium-dpi">
+        <style type="text/css">
+                .slider{height:130px}
+                .eg-flick-panel {font-size:2em;text-align:center}
+        </style>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/egjs/1.1.0/pkgd/flicking.pkgd.min.js"></script>
+</head>
+<body id="lebody">
+
+<section class="slider">
+        <div id="item1" style="background-color:transparent">
+                <p>slide1</p>
+        </div>
+        <div id="item2" style="background-color:transparent">
+                <p>slide2</p>
+        </div>
+        <div id="item2" style="background-color:transparent">
+                <p>slide3</p>
+        </div>
+</section>
+
+<div id="log" style="overflow-y:auto"></div>
+
+<script>
+        //https://stackoverflow.com/questions/35765718/catching-specific-event-on-carousel
+        //https://naver.github.io/egjs-flicking/release/latest/doc/
+        var index = 0;
+        //CONST
+        var VITESSE_DE_VARIATION = 1.25;
+        var TABCOLOR = [
+
+                225, 60, 0
+
+        ]
+
+        var COLORS = [
+                {
+                        h: 325,
+                        s: 73,
+                        l: 29
+                },
+                {
+                        h: 60,
+                        s: 100,
+                        l: 50
+                },
+                {
+                        h: 0,
+                        s: 100,
+                        l: 50
+                },
+        ]
+
+        //hsl(0, 100%, 50%) ROUGE
+        //hsl(60, 100%, 50%) JAUNE
+        //hsl(325, 73%, 29%) PRUNE
+        //hsl(349, 64%, 48%) FRAMBOISE
+        //HSL = Hue Saturation Lightness
+        console.log("lehsltab")
+        console.log(COLORS[0].h)
+        console.log(COLORS[0].s)
+        console.log(COLORS[0].l)
+        //Init
+        var variation = TABCOLOR[0];
+        var hueVariation = COLORS[0].h;
+        var saturationVariation = COLORS[0].s;
+        var saturationLightness = COLORS[0].l;
+
+
+        document.getElementById('lebody').style.backgroundColor = "hsl("+COLORS[0].h+ "," + COLORS[0].s+"%,"+ COLORS[0].l +"%)";
+
+        var flicking = new eg.Flicking(".slider", {
+                duration: 300,
+                circular: false
+        }).on({
+                beforeFlickStart: handler,
+                flick: handler,
+                flickEnd: handler,
+                beforeRestore: handler,
+                restore: handler
+        });
+
+        function handler(event) {
+                //Index de la slide active
+                index = flicking.getIndex();
+
+                //event.eventType Le type d'événement déclenché
+                //event.direction : 2 cherche à accéder à la slide de droite, 4 cherche à accéder à la slide de gauche
+                setHue(event.direction, index)
+                setSaturation(event.direction, index)
+                setLightness(event.direction, index)
+                //On met à jour la couleur de la slide (body)
+                setNewColor(hueVariation);
+                //On a changé de slide
+                if(event.eventType == "flickEnd"){
+                        resetSlide(index);
+                }
+                //On a bougé une slide puis relaché sur la même
+                if(event.eventType == "restore"){
+                        resetSlide(index);
+                }
+        }
+
+        //Reset la variation et la couleur de la slide
+        function resetSlide(index){
+                var h = COLORS[index].h
+                var s = COLORS[index].s
+                var l = COLORS[index].l
+                document.getElementById('lebody').style.backgroundColor = "hsl("+h+ "," + s+"%,"+ l +"%)";
+                hueVariation = h;
+        }
+        //met à jour le css de la slide
+        function setNewColor(hueVariation, saturationVariation, saturationLightness) {
+                //Fait varier la valeur du background-color
+                document.getElementById('lebody').style.backgroundColor = "hsl("+h+ "," + s+"%,"+ l +"%)";
+                //document.getElementById('lebody').style.backgroundColor = "hsl("+hueVariation+", 100%, 50%)";
+        }
+
+        //Fait varier la premiere valeur du code couleur hsl
+        function setHue(direction, index){
+                //On cherche à accéder à la slide de droite qui un indice de couleur supérieur
+                if(direction == 4 && COLORS[index-1].h > COLORS[index].h){
+                        hueVariation < COLORS[index-1].h ? hueVariation+= VITESSE_DE_VARIATION : COLORS[index-1].h;
+                }
+                //On cherche à accéder à la slide de droite qui un indice de couleur inférieur
+                else if(direction == 4 && COLORS[index-1].h < COLORS[index].h){
+                        hueVariation > COLORS[index-1].h ? hueVariation-= VITESSE_DE_VARIATION : COLORS[index-1].h;
+                }
+                //On cherche à accéder à la slide de gauche qui un indice de couleur supérieur
+                if(direction == 2 && COLORS[index+1].h > COLORS[index].h){
+                        hueVariation < COLORS[index+1].h ? hueVariation+= VITESSE_DE_VARIATION : COLORS[index+1].h;
+                }
+                //On cherche à accéder à la slide de gauche qui un indice de couleur inférieur
+                else if(direction == 2 && COLORS[index+1].h < COLORS[index].h){
+                        hueVariation > COLORS[index+1].h ? hueVariation-= VITESSE_DE_VARIATION : COLORS[index+1].h;
+                }
+        }
+
+        //Fait varier la seconde valeur du code couleur hsl
+        function setSaturation(direction, index){
+                //On cherche la slide de droite
+                if(direction == 4 && COLORS[index-1].s > COLORS[index].s){
+                        saturationVariation < COLORS[index-1].s ? saturationVariation+= VITESSE_DE_VARIATION : COLORS[index-1].s;
+                }
+                //On cherche la slide de droite
+                else if(direction == 4 && COLORS[index-1].s < COLORS[index].s){
+                        saturationVariation > COLORS[index-1].s ? saturationVariation-= VITESSE_DE_VARIATION : COLORS[index-1].s;
+                }
+                //On cherche la slide de gauche
+                if(direction == 2 && COLORS[index+1].s > COLORS[index].s){
+                        saturationVariation < COLORS[index+1].s ? saturationVariation+= VITESSE_DE_VARIATION : COLORS[index+1].s;
+                }
+                //On cherche la slide de gauche
+                else if(direction == 2 && COLORS[index+1].s < COLORS[index].s){
+                        saturationVariation > COLORS[index+1].s ? saturationVariation-= VITESSE_DE_VARIATION : COLORS[index+1].s;
+                }
+        }
+
+        //Fait varier la troisième valeur du code couleur hsl
+        function setLightness(direction, index){
+                //On cherche la slide de droite
+                if(direction == 4 && COLORS[index-1].l > COLORS[index].l){
+                        saturationLightness < COLORS[index-1].s ? saturationLightness+= VITESSE_DE_VARIATION : COLORS[index-1].l;
+                }
+                //On cherche la slide de droite
+                else if(direction == 4 && COLORS[index-1].l < COLORS[index].l){
+                        saturationLightness > COLORS[index-1].l ? saturationLightness-= VITESSE_DE_VARIATION : COLORS[index-1].l;
+                }
+                //On cherche la slide de gauche
+                if(direction == 2 && COLORS[index+1].l > COLORS[index].l){
+                        saturationLightness < COLORS[index+1].l ? saturationLightness+= VITESSE_DE_VARIATION : COLORS[index+1].l;
+                }
+                //On cherche la slide de gauche
+                else if(direction == 2 && COLORS[index+1].l < COLORS[index].l){
+                        saturationLightness > COLORS[index+1].l ? saturationLightness-= VITESSE_DE_VARIATION : COLORS[index+1].l;
+                }
+        }
+
+
+        //Convertit RGB en HSL
+        function rgbToHsl(r, g, b) {
+                r /= 255, g /= 255, b /= 255;
+
+                var max = Math.max(r, g, b), min = Math.min(r, g, b);
+                var h, s, l = (max + min) / 2;
+
+                if (max == min) {
+                        h = s = 0; // achromatic
+                } else {
+                        var d = max - min;
+                        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+
+                        switch (max) {
+                                case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+                                case g: h = (b - r) / d + 2; break;
+                                case b: h = (r - g) / d + 4; break;
+                        }
+
+                        h /= 6;
+                }
+
+                return [ h, s, l ];
+        }
+</script>
+</body>
+</html>
